@@ -1,17 +1,186 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Lay-A-Weigh</title>
-  <link rel="manifest" href="manifest.json?v=1">
-  <script src="https://cdn.tailwindcss.com"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Lay A Weigh® Command</title>
+<link rel="manifest" href="./manifest.json?v=1">
+<meta name="theme-color" content="#0f172a">
+<link rel="stylesheet" href="./styles.css?v=1">
 </head>
-<body class="bg-zinc-950 text-white min-h-screen flex items-center justify-center p-6">
-  <div class="text-center space-y-2">
-    <h1 class="text-2xl font-black">Lay-A-Weigh</h1>
-    <p class="text-xs text-zinc-400">Installable PWA ready for Patch 1</p>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-title">LAY A WEIGH<span>®</span> COMMAND</div>
+    <div class="brand-sub">THE BESPOKE RENEWAL, LLC • thebespokerenewal@gmail.com</div>
   </div>
-  <script>if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js?v=1');</script>
+  <div class="pill" id="markup-pill">30% MARKUP</div>
+</header>
+<div id="toast" class="toast">Copied!</div>
+
+<main class="wrap">
+  <!-- VIEW 1: BID CALCULATOR -->
+  <section id="view-bid" class="view active">
+    <div class="hero">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+        <div>
+          <div style="font-size:11px;font-weight:800;color:#94a3b8;text-transform:uppercase">Commercial Bid Total</div>
+          <div class="hero-amt" id="out-total">$0.00</div>
+          <div class="hero-sub" id="out-psf">$0.00 / sq ft • 0 Calendar Days</div>
+        </div>
+        <div style="text-align:right">
+          <div class="badge b-2yr" id="out-warr">2-YR WARRANTY</div>
+          <div id="out-risk-badge"></div>
+        </div>
+      </div>
+      <div id="out-species-warn" style="margin-top:8px"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><div class="card-title">1. Job Scope & Facility</div></div>
+      <div class="grid2">
+        <div><label>Facility / Zoo Name</label><input id="b-client" placeholder="e.g. Detroit Zoo"></div>
+        <div><label>Barn & Species</label><input id="b-room" placeholder="e.g. Rhino Stalls 2-4"></div>
+      </div>
+      <div class="grid3" style="margin-top:9px">
+        <div>
+          <label>Installation Scope</label>
+          <select id="b-scope">
+            <option value="new">New Full Install (3/4" Mats)</option>
+            <option value="ripout">Full Rip-Out & Replace</option>
+            <option value="old_retop">Old High-Risk Retop (8+ yrs)</option>
+            <option value="std_retop">Standard 4-Yr Retop</option>
+            <option value="wear_top">1/8" Wear Top Only</option>
+            <option value="smooth">Smooth Top Coat</option>
+          </select>
+        </div>
+        <div><label>Square Footage</label><input id="b-sqft" type="number" value="1200" min="1"></div>
+        <div><label>Stall Count</label><input id="b-stalls" type="number" value="3" min="1"></div>
+      </div>
+      <div class="grid3" style="margin-top:9px">
+        <div><label>Crew Size</label><input id="b-crew" type="number" value="4" min="1" max="8"></div>
+        <div>
+          <label>Shift Length</label>
+          <select id="b-shift">
+            <option value="12">12-Hr Shifts (Preferred)</option>
+            <option value="8">8-Hr Shifts (+25% Days)</option>
+          </select>
+        </div>
+        <div><label>Markup %</label><input id="b-markup" type="number" value="30" min="0" max="200"></div>
+      </div>
+      <div class="grid3" style="margin-top:9px">
+        <div><label>One-Way Miles</label><input id="b-miles" type="number" value="1100" min="0"></div>
+        <div><label>Per Diem / Guy / Day ($)</label><input id="b-perdiem" type="number" value="226" min="0"></div>
+        <div><label>Equipment Allowance ($)</label><input id="b-equip" type="number" value="2500" min="0"></div>
+      </div>
+      <div class="check-row">
+        <label class="chk"><input type="checkbox" id="b-moist" checked> 48-Hr Moisture Pause (+2d / 3h)</label>
+        <label class="chk"><input type="checkbox" id="b-night"> Night Shift (+$5/hr/guy)</label>
+        <label class="chk"><input type="checkbox" id="b-phased"> Phased Access (+15% hrs)</label>
+        <label class="chk"><input type="checkbox" id="b-ins" checked> 5% Insurance</label>
+        <label class="chk"><input type="checkbox" id="b-risk"> Force 10% Risk Reserve</label>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><div class="card-title">2. Pricing View & Breakdown</div></div>
+      <div class="tabs-mini">
+        <button class="active" data-mode="full">Full Formula</button>
+        <button data-mode="twopart">Two-Part (No Hrs)</button>
+        <button data-mode="stall">Per-Stall Menu</button>
+      </div>
+      <div id="out-breakdown"></div>
+      <div class="btn-row">
+        <button class="btn primary" id="btn-copy-prop"><b>Copy Client Proposal</b><small>Includes warranty & mobilization note</small></button>
+        <button class="btn green" id="btn-save-bid"><b>Save Bid Locally</b><small>Store to device (Drive sync Patch 4)</small></button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><div class="card-title">Saved Bids</div><small id="saved-count" style="color:#94a3b8"></small></div>
+      <div id="saved-list"></div>
+    </div>
+  </section>
+
+  <!-- VIEW 2: SUPPLIER PO & MATERIALS -->
+  <section id="view-mat" class="view">
+    <div class="card">
+      <div class="card-h"><div class="card-title">5-Gallon Pail & Mat PO Calculator</div><div class="pill" id="po-total-pill">$0.00</div></div>
+      <div class="grid3">
+        <div><label>Square Footage</label><input id="m-sqft" type="number" value="400" min="1"></div>
+        <div>
+          <label>System Type</label>
+          <select id="m-scope">
+            <option value="new">Full System (Mats + Coatings)</option>
+            <option value="retop">Retop Only (No Full Mats)</option>
+          </select>
+        </div>
+        <div>
+          <label>VRP-111 Coats</label>
+          <select id="m-vrp">
+            <option value="2">2 Coats (15 lb block)</option>
+            <option value="1">1 Coat (10 lb block)</option>
+            <option value="0">None</option>
+          </select>
+        </div>
+      </div>
+      <div class="check-row">
+        <label class="chk"><input type="checkbox" id="m-waste" checked> Include 10% Waste Factor</label>
+        <button class="btn" id="btn-sync-sqft" style="padding:6px 10px"><b>Pull Sq Ft from Bid</b><small>Sync calculator area</small></button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><div class="card-title">Itemized Supplier Order (5-Gal Pail Pricing)</div></div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>Item</th><th>Qty</th><th>Unit</th><th>Est. Cost</th></tr></thead>
+          <tbody id="po-tbody"></tbody>
+        </table>
+      </div>
+      <div class="btn-row">
+        <button class="btn primary" id="btn-copy-po"><b>Copy Supplier PO</b><small>Your exact order format</small></button>
+        <button class="btn" id="btn-copy-acr"><b>Copy Acronym Legend</b><small>NVM through SSD quick ref</small></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIEW 3: ZOO MAP (PATCH 2) -->
+  <section id="view-map" class="view">
+    <div class="card placeholder">
+      <div style="font-size:36px">🗺️</div>
+      <h3>Nationwide Zoo Radar (Patch 2)</h3>
+      <p>Interactive US & Canada dark map with glowing Red (Attention), Yellow (Retop Soon), Green (Healthy), Blue (Scheduled), and Purple (Historical Audit / AZA Target) pins.</p>
+    </div>
+  </section>
+
+  <!-- VIEW 4: DOCS & EMAIL (PATCH 3) -->
+  <section id="view-docs" class="view">
+    <div class="card placeholder">
+      <div style="font-size:36px">📄</div>
+      <h3>Harmonized Doc Vault & Gmail Hub (Patch 3)</h3>
+      <p>Auto-filled 2-Year New / 1-Year Retop Warranties, Extended At-Cost Addendum, Welcome & Compliance, Pre-Install Sign-Off, Spec/Maintenance Sheets, Spot Repair Guide, and Questionnaires with 1-tap PDF attachment to thebespokerenewal@gmail.com.</p>
+    </div>
+  </section>
+
+  <!-- VIEW 5: SCANNER & FIELD (PATCH 4) -->
+  <section id="view-scan" class="view">
+    <div class="card placeholder">
+      <div style="font-size:36px">📷</div>
+      <h3>OCR Scanner, Diagnostics & Drive Sync (Patch 4)</h3>
+      <p>Camera OCR for 1998–2025 paper files, rebound & Tramex Mode 5 logger, and single-email Google Drive/Gmail OAuth sync.</p>
+    </div>
+  </section>
+</main>
+
+<nav class="nav">
+  <button class="active" data-view="bid"><span>🧮</span>Bid Calc</button>
+  <button data-view="mat"><span>📦</span>Materials</button>
+  <button data-view="map"><span>🗺️</span>Zoo Map</button>
+  <button data-view="docs"><span>📄</span>Docs/Mail</button>
+  <button data-view="scan"><span>📷</span>Scanner</button>
+</nav>
+
+<script src="./app.js?v=1"></script>
 </body>
 </html>
