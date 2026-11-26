@@ -1,5 +1,6 @@
 (()=>{
   const KEY='law_zoos_v1';
+  const THEME_KEY='law_map_dark_v1';
   const STATUS={
     red:{label:'Needs Attention',dot:'d-red',pin:'gp-red',hex:'#ef4444'},
     yellow:{label:'Retop Soon',dot:'d-yellow',pin:'gp-yellow',hex:'#f59e0b'},
@@ -20,8 +21,10 @@
     {id:'z10',name:'Dallas Zoo',city:'Dallas, TX',lat:32.7405,lng:-96.8152,status:'purple',species:'Historical Habitat',sqft:0,inst:0,retop:0,contact:'',phone:'',notes:'Legacy installation — audit contact & floor age.'},
     {id:'z11',name:'Zoo Atlanta',city:'Atlanta, GA',lat:33.7341,lng:-84.3723,status:'purple',species:'Historical Habitat',sqft:0,inst:0,retop:0,contact:'',phone:'',notes:'Legacy installation — AZA soft-substrate check.'}
   ];
-
-  let map=null, layer=null, filter='all';
+  let map=null, layer=null, filter='all', expandedId=null;
+  let darkMap=localStorage.getItem(THEME_KEY)!=='0';
+  const Q=String.fromCharCode(34);
+  const esc=s=>String(s||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll(Q,'&quot;');
   const getZoos=()=>{
     const raw=localStorage.getItem(KEY);
     if(raw===null){localStorage.setItem(KEY,JSON.stringify(SEED));return JSON.parse(JSON.stringify(SEED));}
@@ -29,11 +32,22 @@
   };
   const saveZoos=arr=>localStorage.setItem(KEY,JSON.stringify(arr));
 
+  function applyMapTheme(){
+    const el=document.getElementById('zoo-map');
+    const btn=document.getElementById('btn-map-theme');
+    if(el) el.classList.toggle('map-dark',darkMap);
+    if(btn) btn.textContent=darkMap?'☀️ Light':'🌙 Dark';
+  }
+
   function initMap(){
     if(map||typeof L==='undefined') return;
-    map=L.map('zoo-map',{zoomControl:true,attributionControl:false}).setView([38.8,-96.5],4);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:18}).addTo(map);
+    map=L.map('zoo-map',{zoomControl:true,attributionControl:true}).setView([38.8,-96.5],4);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
+      maxZoom:19,
+      attribution:'&copy; OpenStreetMap'
+    }).addTo(map);
     layer=L.layerGroup().addTo(map);
+    applyMapTheme();
     renderAll();
   }
 
@@ -42,13 +56,20 @@
     zoos.forEach(z=>{if(counts[z.status]!==undefined) counts[z.status]++;});
     const bar=document.getElementById('map-filters');
     if(!bar) return;
-    let html=`<button class="fchip ${filter==='all'?'active':''}" data-f="all">All (${counts.all})</button>`;
+    let html=`<button class='fchip ${filter==='all'?'active':''}' data-f='all'>All (${counts.all})</button>`;
     Object.keys(STATUS).forEach(k=>{
       const s=STATUS[k];
-      html+=`<button class="fchip ${filter===k?'active':''}" data-f="${k}"><span class="dot ${s.dot}"></span>${s.label} (${counts[k]})</button>`;
+      html+=`<button class='fchip ${filter===k?'active':''}' data-f='${k}'><span class='dot ${s.dot}'></span>${s.label} (${counts[k]})</button>`;
     });
     bar.innerHTML=html;
     bar.querySelectorAll('.fchip').forEach(b=>b.onclick=()=>{filter=b.dataset.f;renderAll();});
+  }
+
+  function formatContactLink(raw){
+    const s=(raw||'').trim(); if(!s) return 'Not listed';
+    if(s.includes('@')) return `<a href='mailto:${esc(s)}' style='color:#38bdf8'>${esc(s)}</a>`;
+    if(/\d{3}/.test(s)) return `<a href='tel:${esc(s.replace(/[^\d+]/g,''))}' style='color:#38bdf8'>${esc(s)}</a>`;
+    return esc(s);
   }
 
   function renderAll(){
@@ -56,25 +77,77 @@
     renderFilters(zoos);
     const q=(document.getElementById('zoo-search')?.value||'').toLowerCase();
     const shown=zoos.filter(z=>(filter==='all'||z.status===filter)&&(!q||[z.name,z.city,z.species,z.contact,z.notes].join(' ').toLowerCase().includes(q)));
-
+    const curYr=new Date().getFullYear();
     if(layer){
       layer.clearLayers();
       shown.forEach(z=>{
         if(!z.lat||!z.lng) return;
         const st=STATUS[z.status]||STATUS.purple;
-        const icon=L.divIcon({className:'',html:`<div class="glow-pin ${st.pin}"></div>`,iconSize:[16,16],iconAnchor:[8,8]});
+        const icon=L.divIcon({className:'',html:`<div class='glow-pin ${st.pin}'></div>`,iconSize:[16,16],iconAnchor:[8,8]});
         const m=L.marker([z.lat,z.lng],{icon}).addTo(layer);
-        m.bindPopup(`<div style="min-width:190px"><b style="font-size:13px">${z.name}</b><div style="font-size:11px;color:#94a3b8">${z.city} • ${z.species||'Habitat'}</div><div style="margin:5px 0;font-size:11px;color:${st.hex};font-weight:800">● ${st.label}</div>${z.sqft?`<div style="font-size:11px">Footprint: ${z.sqft} sq ft</div>`:''}${z.notes?`<div style="font-size:11px;color:#cbd5e1;margin-top:4px">${z.notes}</div>`:''}<div style="display:flex;gap:5px;margin-top:8px"><button class="btn-sm gold" onclick="window.__zmBid('${z.id}')">Bid</button><button class="btn-sm" onclick="window.__zmEdit('${z.id}')">Edit</button><button class="btn-sm" onclick="window.__zmRoute('${z.id}')">Route</button></div></div>`);
+        const pop=document.createElement('div');
+        pop.style.minWidth='200px';
+        pop.innerHTML=`<b style='font-size:13px'>${esc(z.name)}</b><div style='font-size:11px;color:#94a3b8'>${esc(z.city)} • ${esc(z.species||'Habitat')}</div><div style='margin:5px 0;font-size:11px;color:${st.hex};font-weight:800'>● ${st.label}</div>${z.sqft?`<div style='font-size:11px'>Footprint: ${z.sqft.toLocaleString()} sq ft</div>`:''}${z.notes?`<div style='font-size:11px;color:#cbd5e1;margin-top:4px'>${esc(z.notes)}</div>`:''}<div style='display:flex;gap:5px;margin-top:8px'><button class='btn-sm gold' data-pa='bid'>Bid</button><button class='btn-sm' data-pa='docs'>Docs</button><button class='btn-sm' data-pa='edit'>Edit</button><button class='btn-sm' data-pa='route'>Route</button></div>`;
+        pop.querySelector('[data-pa=bid]').onclick=()=>window.__zmBid(z.id);
+        pop.querySelector('[data-pa=docs]').onclick=()=>window.__zmDocs(z.id);
+        pop.querySelector('[data-pa=edit]').onclick=()=>window.__zmEdit(z.id);
+        pop.querySelector('[data-pa=route]').onclick=()=>window.__zmRoute(z.id);
+        m.bindPopup(pop);
       });
     }
-
-    document.getElementById('zoo-count').textContent=`${shown.length} of ${zoos.length} facilities`;
+    document.getElementById('zoo-count').textContent=`${shown.length} of ${zoos.length}`;
     const list=document.getElementById('zoo-list');
-    if(!shown.length){list.innerHTML='<div style="font-size:12px;color:#94a3b8">No matching facilities. Tap + Add Zoo to drop a pin.</div>';return;}
+    if(!shown.length){list.innerHTML=`<div style='font-size:12px;color:#94a3b8'>No matching facilities. Tap + Add Zoo to drop a pin.</div>`;return;}
     list.innerHTML=shown.map(z=>{
       const st=STATUS[z.status]||STATUS.purple;
-      return `<div class="saved-item" style="align-items:flex-start"><div style="flex:1"><div style="display:flex;align-items:center;gap:6px"><span class="dot ${st.dot}"></span><b style="font-size:13px">${z.name}</b></div><div style="font-size:11px;color:#94a3b8;margin-top:2px">${z.city} • ${z.species||'—'}${z.sqft?' • '+z.sqft+' sf':''}</div>${z.contact?`<div style="font-size:11px;color:#cbd5e1">${z.contact} ${z.phone||''}</div>`:''}</div><div style="display:flex;gap:5px;flex-wrap:wrap"><button onclick="window.__zmFocus('${z.id}')">Pin</button><button onclick="window.__zmBid('${z.id}')" style="color:#fbbf24">Bid</button><button onclick="window.__zmEdit('${z.id}')">Edit</button></div></div>`;
+      const open=expandedId===z.id;
+      const lastYr=z.retop||z.inst||0;
+      const yrsSince=lastYr?curYr-lastYr:0;
+      const dueTag=(lastYr&&yrsSince>=4)?`<span class='badge b-warn' style='margin:0;font-size:10px'>⚠ ${yrsSince}y since coat</span>`:'';
+      return `<div class='zoo-card ${open?'open':''}'>
+        <button type='button' class='zoo-head' data-zexp='${z.id}'>
+          <div style='min-width:0;flex:1'>
+            <div style='display:flex;align-items:center;gap:6px;flex-wrap:wrap'>
+              <span class='dot ${st.dot}'></span>
+              <b style='font-size:13px;color:#fff'>${esc(z.name)}</b>
+              ${dueTag}
+            </div>
+            <div style='font-size:11px;color:#94a3b8;margin-top:2px'>${esc(z.city)} • ${esc(z.species||'—')}${z.sqft?' • '+z.sqft.toLocaleString()+' sf':''}</div>
+          </div>
+          <span style='font-size:12px;color:#94a3b8;flex-shrink:0'>${open?'▴':'▾'}</span>
+        </button>
+        ${open?`<div class='zoo-body'>
+          <div class='zoo-meta'>
+            <div><small>Status</small><b style='color:${st.hex}'>● ${st.label}</b></div>
+            <div><small>Footprint</small><b>${z.sqft?z.sqft.toLocaleString()+' sq ft':'Not measured'}</b></div>
+            <div><small>Install / Last Retop</small><b>${z.inst||'—'} / ${z.retop||'—'}</b></div>
+            <div><small>Contact</small><b>${esc(z.contact||'Unassigned')}</b></div>
+            <div style='grid-column:span 2'><small>Phone / Email</small><b>${formatContactLink(z.phone)}</b></div>
+          </div>
+          <div class='zoo-notes'>${esc(z.notes||'No field notes or diagnostic scores recorded yet.')}</div>
+          <div class='zoo-acts'>
+            <button type='button' data-za='focus|${z.id}'>📍 Pin</button>
+            <button type='button' class='act-gold' data-za='bid|${z.id}'>🧮 Bid</button>
+            <button type='button' class='act-green' data-za='docs|${z.id}'>📄 Docs</button>
+            <button type='button' data-za='route|${z.id}'>🧭 Route</button>
+            <button type='button' data-za='edit|${z.id}'>✏️ Edit</button>
+          </div>
+        </div>`:''}
+      </div>`;
     }).join('');
+    list.querySelectorAll('[data-zexp]').forEach(b=>b.onclick=()=>{
+      const id=b.dataset.zexp;
+      expandedId=(expandedId===id?null:id);
+      renderAll();
+    });
+    list.querySelectorAll('[data-za]').forEach(b=>b.onclick=()=>{
+      const [act,id]=b.dataset.za.split('|');
+      if(act==='focus') window.__zmFocus(id);
+      else if(act==='bid') window.__zmBid(id);
+      else if(act==='docs') window.__zmDocs(id);
+      else if(act==='route') window.__zmRoute(id);
+      else if(act==='edit') window.__zmEdit(id);
+    });
   }
 
   function openModal(z=null){
@@ -111,13 +184,16 @@
     }catch{window.LAW.toast('Lookup failed — enter manually');}
   }
 
+  document.getElementById('btn-map-theme').onclick=()=>{
+    darkMap=!darkMap; localStorage.setItem(THEME_KEY,darkMap?'1':'0'); applyMapTheme();
+  };
   document.getElementById('btn-add-zoo').onclick=()=>openModal(null);
   document.getElementById('zm-close').onclick=()=>document.getElementById('zoo-modal').classList.remove('open');
   document.getElementById('zm-geo').onclick=geocode;
   document.getElementById('zoo-search').addEventListener('input',renderAll);
   document.getElementById('btn-clear-zoos').onclick=()=>{
     const cur=getZoos();
-    if(cur.length){if(confirm('Clear all pins from the map?')){saveZoos([]);renderAll();window.LAW.toast('Map cleared');}}
+    if(cur.length){if(confirm('Clear all facility pins? (You can re-seed anytime)')){saveZoos([]);expandedId=null;renderAll();window.LAW.toast('Map cleared');}}
     else{saveZoos(SEED);renderAll();window.LAW.toast('Restored 11 known zoos');}
   };
   document.getElementById('zm-save').onclick=async()=>{
@@ -140,7 +216,7 @@
     };
     const zoos=getZoos(), idx=zoos.findIndex(x=>x.id===obj.id);
     if(idx>=0) zoos[idx]=obj; else zoos.unshift(obj);
-    saveZoos(zoos);
+    saveZoos(zoos); expandedId=obj.id;
     document.getElementById('zoo-modal').classList.remove('open');
     renderAll();
     if(map&&obj.lat&&obj.lng) map.setView([obj.lat,obj.lng],6);
@@ -148,22 +224,21 @@
   };
   document.getElementById('zm-del').onclick=()=>{
     const id=document.getElementById('zm-id').value;
-    saveZoos(getZoos().filter(x=>x.id!==id));
+    saveZoos(getZoos().filter(x=>x.id!==id)); expandedId=null;
     document.getElementById('zoo-modal').classList.remove('open');
     renderAll(); window.LAW.toast('Pin removed');
   };
-
   window.__zmFocus=id=>{
     const z=getZoos().find(x=>x.id===id);
     if(z&&map&&z.lat&&z.lng){map.setView([z.lat,z.lng],7);window.scrollTo({top:0,behavior:'smooth'});}
   };
   window.__zmEdit=id=>openModal(getZoos().find(x=>x.id===id));
   window.__zmBid=id=>{const z=getZoos().find(x=>x.id===id); if(z) window.LAW.loadFacilityToBid(z);};
+  window.__zmDocs=id=>{const z=getZoos().find(x=>x.id===id); if(z) window.LAW.loadFacilityToDocs(z);};
   window.__zmRoute=id=>{
     const z=getZoos().find(x=>x.id===id);
     if(z) window.open('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(z.name+' '+z.city),'_blank');
   };
-
   window.addEventListener('law:view',e=>{
     if(e.detail==='map'){initMap();setTimeout(()=>{if(map) map.invalidateSize();renderAll();},120);}
   });
