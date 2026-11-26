@@ -1,247 +1,254 @@
 <!doctype html>
-<html lang="en">
+<html lang='en'>
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta charset='utf-8'>
+<meta name='viewport' content='width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no'>
 <title>Lay A Weigh® Command</title>
-<link rel="manifest" href="./manifest.json?v=2">
-<meta name="theme-color" content="#0f172a">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<link rel="stylesheet" href="./styles.css?v=2">
+<link rel='manifest' href='./manifest.json?v=3'>
+<meta name='theme-color' content='#0f172a'>
+<link rel='stylesheet' href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'>
+<link rel='stylesheet' href='./styles.css?v=3'>
 </head>
 <body>
-<header class="topbar">
-  <div class="brand">
-    <div class="brand-title">LAY A WEIGH<span>®</span> COMMAND</div>
-    <div class="brand-sub">THE BESPOKE RENEWAL, LLC • thebespokerenewal@gmail.com</div>
+<header class='topbar'>
+  <div class='brand'>
+    <div class='brand-title'>LAY A WEIGH<span>®</span> COMMAND</div>
+    <div class='brand-sub'>THE BESPOKE RENEWAL, LLC</div>
   </div>
-  <div class="pill" id="markup-pill">30% MARKUP</div>
+  <div class='top-actions'>
+    <button class='pill pill-btn' id='cloud-pill' title='Google Cloud Sync'>● Offline</button>
+    <button class='pill pill-btn' id='btn-guide-toggle' title='Show/Hide Help Guides'>? Guide</button>
+    <div class='pill' id='markup-pill'>30%</div>
+  </div>
 </header>
-<div id="toast" class="toast">Copied!</div>
-
-<main class="wrap">
-  <section id="view-bid" class="view active">
-    <div class="hero">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
-        <div>
-          <div style="font-size:11px;font-weight:800;color:#94a3b8;text-transform:uppercase">Commercial Bid Total</div>
-          <div class="hero-amt" id="out-total">$0.00</div>
-          <div class="hero-sub" id="out-psf">$0.00 / sq ft • 0 Calendar Days</div>
-        </div>
-        <div style="text-align:right">
-          <div class="badge b-2yr" id="out-warr">2-YR WARRANTY</div>
-          <div id="out-risk-badge"></div>
-        </div>
-      </div>
-      <div id="out-species-warn" style="margin-top:8px"></div>
+<div id='toast' class='toast'>Copied!</div>
+<main class='wrap'>
+  <section id='view-bid' class='view active'>
+    <div class='guide-box'>
+      <b>Quick Bid Workflow:</b> Enter the 6 core fields below for an instant commercial price. Open <b>Advanced Modifiers</b> only when a job needs stalls, shifts, prevailing wage, per diem, or risk adders. Use the bottom handoff buttons to push this job straight into <b>Materials</b> or <b>Docs/Mail</b>.
     </div>
-
-    <div class="card">
-      <div class="card-h"><div class="card-title">1. Job Scope & Facility</div><button class="btn-sm" id="btn-reset-bid">Reset to $0</button></div>
-      <div class="grid2">
-        <div><label>Facility / Zoo Name</label><input id="b-client" placeholder="Enter zoo or facility"></div>
-        <div><label>Barn & Species</label><input id="b-room" placeholder="e.g. Rhino Stalls 2-4"></div>
+    <div class='hero'>
+      <div style='display:flex;justify-content:space-between;align-items:flex-start;gap:8px'>
+        <div>
+          <div style='font-size:11px;font-weight:800;color:#94a3b8;text-transform:uppercase'>Commercial Bid Total</div>
+          <div class='hero-amt' id='out-total'>$0.00</div>
+          <div class='hero-sub' id='out-psf'>$0.00 / sq ft • 0 Calendar Days</div>
+        </div>
+        <div style='text-align:right'>
+          <div class='badge b-2yr' id='out-warr'>2-YR WARRANTY</div>
+          <div id='out-risk-badge'></div>
+        </div>
       </div>
-      <div class="grid3" style="margin-top:9px">
+      <div id='out-species-warn' style='margin-top:8px'></div>
+    </div>
+    <div class='card'>
+      <div class='card-h'><div class='card-title'>1. Core Job Details</div><button class='btn-sm' id='btn-reset-bid'>Reset</button></div>
+      <div class='grid2'>
+        <div><label>Facility / Zoo Name</label><input id='b-client' placeholder='e.g. Detroit Zoo'></div>
+        <div><label>Barn &amp; Species</label><input id='b-room' placeholder='e.g. Rhino Stalls 2-4'></div>
+      </div>
+      <div class='grid2' style='margin-top:9px'>
         <div>
           <label>Installation Scope</label>
-          <select id="b-scope">
-            <option value="new">New Full Install (3/4" Mats)</option>
-            <option value="ripout">Full Rip-Out & Replace</option>
-            <option value="old_retop">Old High-Risk Retop (8+ yrs)</option>
-            <option value="std_retop">Standard 4-Yr Retop</option>
-            <option value="wear_top">1/8" Wear Top Only</option>
-            <option value="smooth">Smooth Top Coat</option>
+          <select id='b-scope'>
+            <option value='new'>New Full Install (3/4″ Mats)</option>
+            <option value='ripout'>Full Rip-Out &amp; Replace</option>
+            <option value='old_retop'>Old High-Risk Retop (8+ yrs)</option>
+            <option value='std_retop'>Standard 4-Yr Retop</option>
+            <option value='wear_top'>1/8″ Wear Top Only</option>
+            <option value='smooth'>Smooth Top Coat</option>
           </select>
         </div>
-        <div><label>Square Footage</label><input id="b-sqft" type="number" placeholder="0" min="0"></div>
-        <div><label>Stall Count</label><input id="b-stalls" type="number" placeholder="0" min="0"></div>
+        <div><label>Square Footage</label><input id='b-sqft' type='number' placeholder='0' min='0'></div>
       </div>
-      <div class="grid3" style="margin-top:9px">
-        <div><label>Crew Size</label><input id="b-crew" type="number" placeholder="0" min="0" max="8"></div>
-        <div>
-          <label>Shift Length</label>
-          <select id="b-shift">
-            <option value="12">12-Hr Shifts (Preferred)</option>
-            <option value="8">8-Hr Shifts (+25% Days)</option>
-          </select>
+      <div class='grid2' style='margin-top:9px'>
+        <div><label>Crew Size</label><input id='b-crew' type='number' placeholder='e.g. 3' min='0' max='8'></div>
+        <div><label>One-Way Miles</label><input id='b-miles' type='number' placeholder='0' min='0'></div>
+      </div>
+      <details class='adv-box' id='bid-adv-box'>
+        <summary><span>⚙️ Advanced Modifiers, Rates &amp; Site Adders</span><span class='pill' id='adv-count-pill'>Default</span></summary>
+        <div class='adv-body'>
+          <div class='grid3'>
+            <div><label>Stall Count</label><input id='b-stalls' type='number' placeholder='0' min='0'></div>
+            <div>
+              <label>Shift Length</label>
+              <select id='b-shift'>
+                <option value='12'>12-Hr Shifts</option>
+                <option value='8'>8-Hr (+25% Days)</option>
+              </select>
+            </div>
+            <div><label>Markup %</label><input id='b-markup' type='number' value='30' min='0' max='200'></div>
+          </div>
+          <div class='grid2' style='margin-top:9px'>
+            <div><label>Per Diem / Guy / Day ($)</label><input id='b-perdiem' type='number' placeholder='0' min='0'></div>
+            <div><label>Equipment Allowance ($)</label><input id='b-equip' type='number' placeholder='0' min='0'></div>
+          </div>
+          <div class='check-row'>
+            <label class='chk'><input type='checkbox' id='b-moist'> 48-Hr Moisture Pause (+2d / 3h)</label>
+            <label class='chk'><input type='checkbox' id='b-pw'> Prevailing Wage ($120/$65)</label>
+            <label class='chk'><input type='checkbox' id='b-night'> Night Shift (+$5/hr/guy)</label>
+            <label class='chk'><input type='checkbox' id='b-phased'> Phased Access (+15% hrs)</label>
+            <label class='chk'><input type='checkbox' id='b-lift'> No Dock/Forklift (+$500)</label>
+            <label class='chk'><input type='checkbox' id='b-stor'> No Shaded Storage (+$500)</label>
+            <label class='chk'><input type='checkbox' id='b-ins'> 5% Insurance</label>
+            <label class='chk'><input type='checkbox' id='b-risk'> Force 10% Risk Reserve</label>
+          </div>
         </div>
-        <div><label>Markup %</label><input id="b-markup" type="number" value="30" min="0" max="200"></div>
+      </details>
+    </div>
+    <div class='card'>
+      <div class='card-h'><div class='card-title'>2. Pricing &amp; Proposal Actions</div></div>
+      <div class='tabs-mini'>
+        <button class='active' data-mode='full'>Full Formula</button>
+        <button data-mode='twopart'>Two-Part</button>
+        <button data-mode='stall'>Per-Stall</button>
       </div>
-      <div class="grid3" style="margin-top:9px">
-        <div><label>One-Way Miles</label><input id="b-miles" type="number" placeholder="0" min="0"></div>
-        <div><label>Per Diem / Guy / Day ($)</label><input id="b-perdiem" type="number" placeholder="0" min="0"></div>
-        <div><label>Equipment Allowance ($)</label><input id="b-equip" type="number" placeholder="0" min="0"></div>
+      <div id='out-breakdown'></div>
+      <div class='btn-row'>
+        <button class='btn primary' id='btn-copy-prop'><b>Copy Client Proposal</b><small>Turnkey total &amp; warranty note</small></button>
+        <button class='btn green' id='btn-save-bid'><b>Save Bid</b><small>Store &amp; sync via Drive</small></button>
       </div>
-      <div class="check-row">
-        <label class="chk"><input type="checkbox" id="b-moist"> 48-Hr Moisture Pause (+2d / 3h)</label>
-        <label class="chk"><input type="checkbox" id="b-pw"> Prevailing Wage ($120/$65)</label>
-        <label class="chk"><input type="checkbox" id="b-night"> Night Shift (+$5/hr/guy)</label>
-        <label class="chk"><input type="checkbox" id="b-phased"> Phased Access (+15% hrs)</label>
-        <label class="chk"><input type="checkbox" id="b-lift"> No Dock/Forklift (+$500)</label>
-        <label class="chk"><input type="checkbox" id="b-stor"> No Shaded Storage (+$500)</label>
-        <label class="chk"><input type="checkbox" id="b-ins"> 5% Insurance</label>
-        <label class="chk"><input type="checkbox" id="b-risk"> Force 10% Risk Reserve</label>
+      <div class='btn-row'>
+        <button class='btn' id='btn-to-mat'><b>→ Materials PO</b><small>Send sq ft &amp; scope to PO calc</small></button>
+        <button class='btn' id='btn-to-docs'><b>→ Docs &amp; PDFs</b><small>Auto-fill warranty &amp; email bundle</small></button>
       </div>
     </div>
-
-    <div class="card">
-      <div class="card-h"><div class="card-title">2. Pricing View & Breakdown</div></div>
-      <div class="tabs-mini">
-        <button class="active" data-mode="full">Full Formula</button>
-        <button data-mode="twopart">Two-Part (No Hrs)</button>
-        <button data-mode="stall">Per-Stall Menu</button>
-      </div>
-      <div id="out-breakdown"></div>
-      <div class="btn-row">
-        <button class="btn primary" id="btn-copy-prop"><b>Copy Client Proposal</b><small>Includes warranty & mobilization note</small></button>
-        <button class="btn green" id="btn-save-bid"><b>Save Bid Locally</b><small>Store to device (Drive sync Patch 4)</small></button>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-h"><div class="card-title">Saved Bids</div><small id="saved-count" style="color:#94a3b8"></small></div>
-      <div id="saved-list"></div>
-    </div>
+    <details class='card adv-card' id='saved-bids-box'>
+      <summary class='card-h' style='margin:0;cursor:pointer'><div class='card-title'>Saved Bids</div><small id='saved-count' style='color:#94a3b8'>0 saved</small></summary>
+      <div id='saved-list' style='margin-top:10px'></div>
+    </details>
   </section>
-
-  <section id="view-mat" class="view">
-    <div class="card">
-      <div class="card-h"><div class="card-title">5-Gallon Pail & Mat PO Calculator</div><div class="pill" id="po-total-pill">$0.00</div></div>
-      <div class="grid3">
-        <div><label>Square Footage</label><input id="m-sqft" type="number" placeholder="0" min="0"></div>
+  <section id='view-mat' class='view'>
+    <div class='guide-box'>
+      <b>Materials PO Guide:</b> Enter square footage (or tap <b>Pull Sq Ft from Bid</b>), pick Full System vs. Retop, and adjust VRP-111 moisture coats. Quantities automatically round up to whole 5-gal pails, kits, and 4x6 mats.
+    </div>
+    <div class='card'>
+      <div class='card-h'><div class='card-title'>5-Gallon Pail &amp; Mat PO Calculator</div><div class='pill' id='po-total-pill'>$0.00</div></div>
+      <div class='grid3'>
+        <div><label>Square Footage</label><input id='m-sqft' type='number' placeholder='0' min='0'></div>
         <div>
           <label>System Type</label>
-          <select id="m-scope">
-            <option value="new">Full System (Mats + Coatings)</option>
-            <option value="retop">Retop Only (No Full Mats)</option>
+          <select id='m-scope'>
+            <option value='new'>Full System (Mats + Coatings)</option>
+            <option value='retop'>Retop Only (No Full Mats)</option>
           </select>
         </div>
         <div>
           <label>VRP-111 Coats</label>
-          <select id="m-vrp">
-            <option value="2">2 Coats (15 lb block)</option>
-            <option value="1">1 Coat (10 lb block)</option>
-            <option value="0">None</option>
+          <select id='m-vrp'>
+            <option value='2'>2 Coats (15 lb block)</option>
+            <option value='1'>1 Coat (10 lb block)</option>
+            <option value='0'>None</option>
           </select>
         </div>
       </div>
-      <div class="check-row">
-        <label class="chk"><input type="checkbox" id="m-waste" checked> Include 10% Waste Factor</label>
-        <button class="btn-sm gold" id="btn-sync-sqft">Pull Sq Ft from Bid</button>
+      <div class='check-row' style='justify-content:space-between;align-items:center'>
+        <label class='chk'><input type='checkbox' id='m-waste' checked> Include 10% Waste</label>
+        <button class='btn-sm gold' id='btn-sync-sqft'>Pull Sq Ft from Bid</button>
       </div>
     </div>
-
-    <div class="card">
-      <div class="card-h"><div class="card-title">Itemized Supplier Order (5-Gal Pail Pricing)</div></div>
-      <div style="overflow-x:auto">
+    <div class='card'>
+      <div class='card-h'><div class='card-title'>Itemized Supplier Order</div></div>
+      <div style='overflow-x:auto'>
         <table>
           <thead><tr><th>Item</th><th>Qty</th><th>Unit</th><th>Est. Cost</th></tr></thead>
-          <tbody id="po-tbody"></tbody>
+          <tbody id='po-tbody'></tbody>
         </table>
       </div>
-      <div class="btn-row">
-        <button class="btn primary" id="btn-copy-po"><b>Copy Supplier PO</b><small>Your exact order format</small></button>
-        <button class="btn" id="btn-copy-acr"><b>Copy Acronym Legend</b><small>NVM through SSD quick ref</small></button>
+      <div class='btn-row'>
+        <button class='btn primary' id='btn-copy-po'><b>Copy Supplier PO</b><small>Formatted order sheet</small></button>
+        <button class='btn' id='btn-copy-acr'><b>Copy Acronym Legend</b><small>NVM through SSD ref</small></button>
       </div>
     </div>
   </section>
-
-  <section id="view-map" class="view">
-    <div class="card">
-      <div class="card-h">
-        <div class="card-title">Nationwide Zoo Radar</div>
-        <div style="display:flex;gap:6px">
-          <button class="btn-sm gold" id="btn-add-zoo">+ Add Zoo</button>
-          <button class="btn-sm" id="btn-clear-zoos">Clear / Seed</button>
+  <section id='view-map' class='view'>
+    <div class='guide-box'>
+      <b>Zoo Radar CRM:</b> Filter facilities by status color, toggle <b>Light / Dark</b> map for outdoor glare, or <b>tap any facility card below</b> to expand install history, contacts, field notes, and 1-tap Bid / Docs / Route actions.
+    </div>
+    <div class='card'>
+      <div class='card-h'>
+        <div class='card-title'>Nationwide Zoo Radar</div>
+        <div style='display:flex;gap:6px'>
+          <button class='btn-sm' id='btn-map-theme' title='Toggle Dark/Light Map'>☀️ Light</button>
+          <button class='btn-sm gold' id='btn-add-zoo'>+ Add Zoo</button>
         </div>
       </div>
-      <div class="filter-bar" id="map-filters"></div>
-      <div id="zoo-map"></div>
+      <div class='filter-bar' id='map-filters'></div>
+      <div id='zoo-map' class='map-dark'></div>
     </div>
-    <div class="card">
-      <div class="card-h"><div class="card-title">Facility Directory</div><small id="zoo-count" style="color:#94a3b8"></small></div>
-      <input id="zoo-search" placeholder="Search zoo, city, species, contact..." style="margin-bottom:10px">
-      <div id="zoo-list"></div>
-    </div>
-  </section>
-
-  <section id="view-docs" class="view">
-    <div class="card placeholder">
-      <div style="font-size:36px">📄</div>
-      <h3>Harmonized Doc Vault & Gmail Hub (Patch 3)</h3>
-      <p>Auto-filled 2-Year New / 1-Year Retop Warranties, Extended At-Cost Addendum, Welcome & Compliance, Pre-Install Sign-Off, Spec/Maintenance Sheets, Spot Repair Guide, and Questionnaires with 1-tap PDF bundling.</p>
+    <div class='card'>
+      <div class='card-h'>
+        <div class='card-title'>Facility Directory</div>
+        <div style='display:flex;align-items:center;gap:8px'>
+          <small id='zoo-count' style='color:#94a3b8'></small>
+          <button class='btn-sm' id='btn-clear-zoos' style='font-size:10px;padding:4px 7px'>Reset List</button>
+        </div>
+      </div>
+      <input id='zoo-search' placeholder='Search zoo, city, species, contact...' style='margin-bottom:10px'>
+      <div id='zoo-list'></div>
     </div>
   </section>
-
-  <section id="view-scan" class="view">
-    <div class="card placeholder">
-      <div style="font-size:36px">📷</div>
-      <h3>OCR Scanner, Diagnostics & Drive Sync (Patch 4)</h3>
-      <p>Camera OCR for 1998–2025 paper files, rebound & Tramex Mode 5 logger, and single-email Google Drive/Gmail OAuth sync.</p>
-    </div>
-  </section>
+  <section id='view-docs' class='view'></section>
+  <section id='view-scan' class='view'></section>
 </main>
-
-<div class="modal-bg" id="zoo-modal">
-  <div class="modal-box">
-    <div class="card-h"><div class="card-title" id="zm-title">Add Facility</div><button class="btn-sm" id="zm-close">✕</button></div>
-    <input type="hidden" id="zm-id">
-    <div class="grid2">
-      <div><label>Facility / Zoo Name</label><input id="zm-name" placeholder="e.g. Omaha Henry Doorly Zoo"></div>
-      <div><label>City, State</label><input id="zm-city" placeholder="e.g. Omaha, NE"></div>
+<div class='modal-bg' id='zoo-modal'>
+  <div class='modal-box'>
+    <div class='card-h'><div class='card-title' id='zm-title'>Add Facility</div><button class='btn-sm' id='zm-close'>✕</button></div>
+    <input type='hidden' id='zm-id'>
+    <div class='grid2'>
+      <div><label>Facility / Zoo Name</label><input id='zm-name' placeholder='e.g. Omaha Henry Doorly Zoo'></div>
+      <div><label>City, State</label><input id='zm-city' placeholder='e.g. Omaha, NE'></div>
     </div>
-    <div class="grid3" style="margin-top:8px">
-      <div><label>Latitude</label><input id="zm-lat" type="number" step="any" placeholder="Auto"></div>
-      <div><label>Longitude</label><input id="zm-lng" type="number" step="any" placeholder="Auto"></div>
-      <div style="display:flex;align-items:flex-end"><button class="btn-sm gold" id="zm-geo" style="width:100%;padding:10px">Find Coords</button></div>
+    <div class='grid3' style='margin-top:8px'>
+      <div><label>Latitude</label><input id='zm-lat' type='number' step='any' placeholder='Auto'></div>
+      <div><label>Longitude</label><input id='zm-lng' type='number' step='any' placeholder='Auto'></div>
+      <div style='display:flex;align-items:flex-end'><button class='btn-sm gold' id='zm-geo' style='width:100%;padding:10px'>Find Coords</button></div>
     </div>
-    <div class="grid2" style="margin-top:8px">
+    <div class='grid2' style='margin-top:8px'>
       <div>
         <label>Map Pin Status Color</label>
-        <select id="zm-status">
-          <option value="red">🔴 Red — Needs Attention / Overdue</option>
-          <option value="yellow">🟡 Yellow — Retop Soon / Pending</option>
-          <option value="green">🟢 Green — Healthy / Warrantied</option>
-          <option value="blue">🔵 Blue — Scheduled / Active Job</option>
-          <option value="purple">🟣 Purple — Historical Audit / AZA</option>
+        <select id='zm-status'>
+          <option value='red'>🔴 Red — Needs Attention / Overdue</option>
+          <option value='yellow'>🟡 Yellow — Retop Soon / Pending</option>
+          <option value='green'>🟢 Green — Healthy / Warrantied</option>
+          <option value='blue'>🔵 Blue — Scheduled / Active Job</option>
+          <option value='purple'>🟣 Purple — Historical Audit / AZA</option>
         </select>
       </div>
-      <div><label>Barn & Species</label><input id="zm-species" placeholder="e.g. Rhino Barn"></div>
+      <div><label>Barn &amp; Species</label><input id='zm-species' placeholder='e.g. Rhino Barn'></div>
     </div>
-    <div class="grid3" style="margin-top:8px">
-      <div><label>Est. Sq Ft</label><input id="zm-sqft" type="number" placeholder="0"></div>
-      <div><label>Install Year</label><input id="zm-inst" type="number" placeholder="e.g. 2022"></div>
-      <div><label>Last Retop Yr</label><input id="zm-retop" type="number" placeholder="e.g. 2026"></div>
+    <div class='grid3' style='margin-top:8px'>
+      <div><label>Est. Sq Ft</label><input id='zm-sqft' type='number' placeholder='0'></div>
+      <div><label>Install Year</label><input id='zm-inst' type='number' placeholder='e.g. 2022'></div>
+      <div><label>Last Retop Yr</label><input id='zm-retop' type='number' placeholder='e.g. 2026'></div>
     </div>
-    <div class="grid2" style="margin-top:8px">
-      <div><label>Contact Name</label><input id="zm-contact" placeholder="Curator / Facilities"></div>
-      <div><label>Phone / Email</label><input id="zm-phone" placeholder="Phone or email"></div>
+    <div class='grid2' style='margin-top:8px'>
+      <div><label>Contact Name</label><input id='zm-contact' placeholder='Curator / Facilities'></div>
+      <div><label>Phone / Email</label><input id='zm-phone' placeholder='Phone or email'></div>
     </div>
-    <div style="margin-top:8px"><label>Notes / Diagnostics</label><textarea id="zm-notes" rows="2" placeholder="Rebound score, moisture notes, history..."></textarea></div>
-    <div class="btn-row">
-      <button class="btn green" id="zm-save"><b>Save Facility Pin</b><small>Updates glowing map immediately</small></button>
-      <button class="btn" id="zm-del" style="border-color:#ef4444"><b style="color:#f87171">Delete Pin</b><small>Remove from map</small></button>
+    <div style='margin-top:8px'><label>Notes / Diagnostics</label><textarea id='zm-notes' rows='2' placeholder='Rebound score, moisture notes, history...'></textarea></div>
+    <div class='btn-row'>
+      <button class='btn green' id='zm-save'><b>Save Facility Pin</b><small>Updates map &amp; directory</small></button>
+      <button class='btn' id='zm-del' style='border-color:#ef4444'><b style='color:#f87171'>Delete Pin</b><small>Remove from map</small></button>
     </div>
   </div>
 </div>
-
-<nav class="nav">
-  <button class="active" data-view="bid"><span>🧮</span>Bid Calc</button>
-  <button data-view="mat"><span>📦</span>Materials</button>
-  <button data-view="map"><span>🗺️</span>Zoo Map</button>
-  <button data-view="docs"><span>📄</span>Docs/Mail</button>
-  <button data-view="scan"><span>📷</span>Scanner</button>
+<nav class='nav'>
+  <button class='active' data-view='bid'><span>🧮</span>Bid Calc</button>
+  <button data-view='mat'><span>📦</span>Materials</button>
+  <button data-view='map'><span>🗺️</span>Zoo Map</button>
+  <button data-view='docs'><span>📄</span>Docs/Mail</button>
+  <button data-view='scan'><span>🛠️</span>Tools</button>
 </nav>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="./app.js?v=2"></script>
-<script src="./zoo-map.js?v=2"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-  <script src="./docs-templates.js?v=1"></script>
-  <script src="./docs-hub.js?v=1"></script>
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-  <script src="./field-scanner.js?v=1"></script>
-  <script src="./google-sync.js?v=1"></script>
+<script src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'></script>
+<script src='./app.js?v=3'></script>
+<script src='./zoo-map.js?v=3'></script>
+<script src='https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js'></script>
+<script src='./docs-templates.js?v=3'></script>
+<script src='./docs-hub.js?v=3'></script>
+<script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
+<script src='./field-scanner.js?v=3'></script>
+<script src='./google-sync.js?v=3'></script>
+<script>if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js?v=3');</script>
 </body>
 </html>
